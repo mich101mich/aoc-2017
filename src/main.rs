@@ -12,14 +12,18 @@ macro_rules! pv {
 fn main() {
     let input = include_str!("input/day_03.txt");
     /*
-    let input = r#"1024"#;
+    let input = r#"5"#;
     // */
     let num = i32::from_str(input).unwrap();
 
-    let mut current = 3;
+    let mut values: HashMap<(i32, i32), i32> = HashMap::new();
+    values.insert((0, 0), 1);
+    values.insert((1, 0), 1);
+
+    let mut current: i32 = 1;
     let mut x: i32 = 1;
-    let mut y: i32 = -1;
-    let mut dir = 3;
+    let mut y: i32 = 0;
+    let mut dir = 0;
     while current < num {
         match dir {
             0 => y -= 1,
@@ -28,13 +32,20 @@ fn main() {
             3 => x -= 1,
             n => panic!("Invalid dir: {}", n),
         }
-        current += 1;
+        current = values
+            .iter()
+            .filter(|(&pos, _)| moore(pos, (x, y)) == 1)
+            .map(|(_, &v)| v)
+            .sum();
+        
+        values.insert((x, y), current);
+
         if dir != 1 && x.abs() == y.abs() || dir == 1 && x == y + 1 {
             dir = (dir + 3) % 4;
         }
     }
 
-    pv!(x.abs() + y.abs());
+    pv!(current);
 }
 
 trait IterExt<T> {
@@ -47,4 +58,11 @@ where
     fn to_vec(self) -> Vec<T> {
         self.collect()
     }
+}
+
+fn manhattan((ax, ay): (i32, i32), (bx, by): (i32, i32)) -> i32 {
+    (ax - bx).abs() + (ay - by).abs()
+}
+fn moore((ax, ay): (i32, i32), (bx, by): (i32, i32)) -> i32 {
+    (ax - bx).abs().max((ay - by).abs())
 }
