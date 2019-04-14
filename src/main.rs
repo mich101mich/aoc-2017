@@ -10,36 +10,31 @@ macro_rules! pv {
 }
 
 fn main() {
-    let input = include_str!("input/day_02.txt");
+    let input = include_str!("input/day_03.txt");
     /*
-        let input = r#"5	1	9	5
-    7	5	3
-    2	4	6	8"#;
-        // */
+    let input = r#"1024"#;
+    // */
+    let num = i32::from_str(input).unwrap();
 
-    let nums = input
-        .lines()
-        .map(|line| line.split('\t').map(|n| i32::from_str(n).unwrap()).to_vec())
-        .to_vec();
+    let mut current = 3;
+    let mut x: i32 = 1;
+    let mut y: i32 = -1;
+    let mut dir = 3;
+    while current < num {
+        match dir {
+            0 => y -= 1,
+            1 => x += 1,
+            2 => y += 1,
+            3 => x -= 1,
+            n => panic!("Invalid dir: {}", n),
+        }
+        current += 1;
+        if dir != 1 && x.abs() == y.abs() || dir == 1 && x == y + 1 {
+            dir = (dir + 3) % 4;
+        }
+    }
 
-    let sum: i32 = nums
-        .iter()
-        .map(|row| {
-            let mut sum = 0;
-            for (i, &n) in row.iter().enumerate() {
-                for &n2 in row.iter().skip(i + 1) {
-                    if n % n2 == 0 {
-                        sum += n / n2;
-                    } else if n2 % n == 0 {
-                        sum += n2 / n;
-                    }
-                }
-            }
-            sum
-        })
-        .sum();
-
-    pv!(sum);
+    pv!(x.abs() + y.abs());
 }
 
 trait IterExt<T> {
