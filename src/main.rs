@@ -19,7 +19,7 @@ fn main() {
         .map(|line| i32::from_str(line).unwrap_or_else(|_| panic!("{}", line)))
         .to_vec();
 
-    let mut seen = HashSet::new();
+    let mut seen = HashMap::new();
     let mut iterations = 0;
     let len = banks.len();
 
@@ -38,9 +38,12 @@ fn main() {
 
         iterations += 1;
 
-        if !seen.insert(format!("{:?}", banks)) {
+        let s = format!("{:?}", banks);
+        if seen.contains_key(&s) {
+            println!("{}", iterations - seen[&s]);
             break;
         }
+        seen.insert(s, iterations);
     }
 
     pv!(iterations);
