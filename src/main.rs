@@ -22,13 +22,17 @@ fn main() {
         .lines()
         .map(|line| i32::from_str(line).unwrap_or_else(|_| panic!("{}", line)))
         .to_vec();
-    
+
     let mut current: i32 = 0;
     let mut steps = 0;
 
     while current >= 0 && current < lines.len() as i32 {
         let val = lines[current as usize];
-        lines[current as usize] += 1;
+        if val >= 3 {
+            lines[current as usize] -= 1;
+        } else {
+            lines[current as usize] += 1;
+        }
         current += val;
         steps += 1;
     }
