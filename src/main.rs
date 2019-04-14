@@ -10,43 +10,56 @@ macro_rules! pv {
 }
 
 fn main() {
-    let input = include_str!("input/day_06.txt");
+    let input = include_str!("input/day_07.txt");
     /*
-    let input = "0\t2\t7\t0";
+    let input = "pbga (66)
+xhth (57)
+ebii (61)
+havc (66)
+ktlj (57)
+fwft (72) -> ktlj, cntj, xhth
+qoyq (66)
+padx (45) -> pbga, havc, qoyq
+tknk (41) -> ugml, padx, fwft
+jptl (61)
+ugml (68) -> gyxo, ebii, jptl
+gyxo (61)
+cntj (57)";
     // */
-    let mut banks = input
-        .split('\t')
-        .map(|line| i32::from_str(line).unwrap_or_else(|_| panic!("{}", line)))
-        .to_vec();
+    let mut parents = HashMap::new();
+    let mut disks = HashMap::new();
 
-    let mut seen = HashMap::new();
-    let mut iterations = 0;
-    let len = banks.len();
+    for line in input.lines() {
+        let mut iter = line.split(' ');
+        let name = iter.next().unwrap();
+        let weight = iter.next().unwrap();
 
-    loop {
-        let mut mi = 0;
-        for i in 1..len {
-            if banks[i] > banks[mi] {
-                mi = i;
+        let weight = i32::from_str(&weight[1..weight.len() - 1]).unwrap();
+        disks.insert(name, weight);
+
+        if let Some(_) = iter.next() {
+            // arrow
+            let children = iter
+                .map(|c| {
+                    if c.ends_with(',') {
+                        &c[..c.len() - 1]
+                    } else {
+                        c
+                    }
+                })
+                .to_vec();
+
+            for child in children {
+                parents.insert(child, name);
             }
         }
-        let count = banks[mi];
-        banks[mi] = 0;
-        for di in 0..count {
-            banks[(mi + 1 + di as usize) % len] += 1;
-        }
-
-        iterations += 1;
-
-        let s = format!("{:?}", banks);
-        if seen.contains_key(&s) {
-            println!("{}", iterations - seen[&s]);
-            break;
-        }
-        seen.insert(s, iterations);
+    }
+    let mut root = *parents.keys().next().unwrap();
+    while parents.contains_key(root) {
+        root = parents[root];
     }
 
-    pv!(iterations);
+    pv!(root);
 }
 
 trait IterExt<T> {
