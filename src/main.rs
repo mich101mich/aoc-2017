@@ -10,29 +10,30 @@ macro_rules! pv {
 }
 
 fn main() {
-    let input = include_str!("input/day_04.txt");
+    let input = include_str!("input/day_05.txt");
     /*
-    let input = r#"abcde xyz ecdab
-abcde fghij
-a ab abc abd abf abj"#;
+    let input = r#"0
+3
+0
+1
+-3"#;
     // */
-    let count = input
+    let mut lines = input
         .lines()
-        .filter(|line| {
-            line.split(' ').count()
-                == line
-                    .split(' ')
-                    .map(|word| {
-                        let mut chars = word.chars().to_vec();
-                        chars.sort();
-                        chars.into_iter().collect::<String>()
-                    })
-                    .collect::<HashSet<_>>()
-                    .len()
-        })
-        .count();
+        .map(|line| i32::from_str(line).unwrap_or_else(|_| panic!("{}", line)))
+        .to_vec();
+    
+    let mut current: i32 = 0;
+    let mut steps = 0;
 
-    pv!(count);
+    while current >= 0 && current < lines.len() as i32 {
+        let val = lines[current as usize];
+        lines[current as usize] += 1;
+        current += val;
+        steps += 1;
+    }
+
+    pv!(steps);
 }
 
 trait IterExt<T> {
