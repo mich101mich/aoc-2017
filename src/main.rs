@@ -12,11 +12,24 @@ macro_rules! pv {
 fn main() {
     let input = include_str!("input/day_04.txt");
     /*
-    let input = r#"aa bb cc dd aa"#;
+    let input = r#"abcde xyz ecdab
+abcde fghij
+a ab abc abd abf abj"#;
     // */
     let count = input
         .lines()
-        .filter(|line| line.split(' ').count() == line.split(' ').collect::<HashSet<_>>().len())
+        .filter(|line| {
+            line.split(' ').count()
+                == line
+                    .split(' ')
+                    .map(|word| {
+                        let mut chars = word.chars().to_vec();
+                        chars.sort();
+                        chars.into_iter().collect::<String>()
+                    })
+                    .collect::<HashSet<_>>()
+                    .len()
+        })
         .count();
 
     pv!(count);
