@@ -10,13 +10,13 @@ macro_rules! pv {
 
 fn main() {
     let input = include_str!("input/day_01.txt");
-    //let input = "91212129";
+    //let input = "12131415";
 
     let chars = input.chars().to_vec();
 
     let sum = chars
         .iter()
-        .zip(chars.iter().skip(1).chain(chars.iter()))
+        .zip(chars.iter().skip(chars.len() / 2).chain(chars.iter()))
         .filter(|(a, b)| a == b)
         .map(|c| *c.0 as usize - '0' as usize)
         .sum::<usize>();
