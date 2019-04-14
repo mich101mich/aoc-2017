@@ -10,42 +10,16 @@ macro_rules! pv {
 }
 
 fn main() {
-    let input = include_str!("input/day_03.txt");
+    let input = include_str!("input/day_04.txt");
     /*
-    let input = r#"5"#;
+    let input = r#"aa bb cc dd aa"#;
     // */
-    let num = i32::from_str(input).unwrap();
+    let count = input
+        .lines()
+        .filter(|line| line.split(' ').count() == line.split(' ').collect::<HashSet<_>>().len())
+        .count();
 
-    let mut values: HashMap<(i32, i32), i32> = HashMap::new();
-    values.insert((0, 0), 1);
-    values.insert((1, 0), 1);
-
-    let mut current: i32 = 1;
-    let mut x: i32 = 1;
-    let mut y: i32 = 0;
-    let mut dir = 0;
-    while current < num {
-        match dir {
-            0 => y -= 1,
-            1 => x += 1,
-            2 => y += 1,
-            3 => x -= 1,
-            n => panic!("Invalid dir: {}", n),
-        }
-        current = values
-            .iter()
-            .filter(|(&pos, _)| moore(pos, (x, y)) == 1)
-            .map(|(_, &v)| v)
-            .sum();
-        
-        values.insert((x, y), current);
-
-        if dir != 1 && x.abs() == y.abs() || dir == 1 && x == y + 1 {
-            dir = (dir + 3) % 4;
-        }
-    }
-
-    pv!(current);
+    pv!(count);
 }
 
 trait IterExt<T> {
