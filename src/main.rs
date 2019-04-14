@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 use std::collections::{HashMap, HashSet};
+use std::str::FromStr;
 
 macro_rules! pv {
     ($e: expr) => {
@@ -9,19 +10,24 @@ macro_rules! pv {
 }
 
 fn main() {
-    let input = include_str!("input/day_01.txt");
-    //let input = "12131415";
+    let input = include_str!("input/day_02.txt");
+    /*
+    let input = r#"5	1	9	5
+7	5	3
+2	4	6	8"#;
+    // */
 
-    let chars = input.chars().to_vec();
+    let nums = input
+        .lines()
+        .map(|line| line.split('\t').map(|n| i32::from_str(n).unwrap()).to_vec())
+        .to_vec();
 
-    let sum = chars
+    let sum: i32 = nums
         .iter()
-        .zip(chars.iter().skip(chars.len() / 2).chain(chars.iter()))
-        .filter(|(a, b)| a == b)
-        .map(|c| *c.0 as usize - '0' as usize)
-        .sum::<usize>();
+        .map(|row| row.iter().max().unwrap() - row.iter().min().unwrap())
+        .sum();
 
-    pv!(sum);
+    let sum = pv!(sum);
 }
 
 trait IterExt<T> {
