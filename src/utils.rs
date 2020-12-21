@@ -12,6 +12,13 @@ macro_rules! pv {
     ($var: expr) => {
         println!("{}: {:?}", stringify!($var), $var)
     };
+    ($start: expr, $($var: expr),+) => {
+        let mut s = format!("{}: {:?}", stringify!($start), $start);
+        $(
+            s += &format!(",  {}: {:?}", stringify!($var), $var);
+        );*
+        println!("{}", s);
+    };
 }
 
 macro_rules! scanf {
