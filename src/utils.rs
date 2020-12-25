@@ -21,6 +21,16 @@ macro_rules! pv {
     };
 }
 
+macro_rules! print_arr {
+	($var: ident) => {
+		print!("{}: ", stringify!($var));
+		for v in $var.iter() {
+			print!("{}", v);
+		}
+		println!();
+	};
+}
+
 macro_rules! scanf {
     ( $instr:expr, $fmt:expr, $($($args:tt)::*),* ) => {
         {
@@ -59,6 +69,18 @@ where
         self.collect()
     }
 }
+pub trait IterMapExt<K: std::hash::Hash + std::cmp::Eq, V> {
+    fn to_map(self) -> HashMap<K, V>;
+}
+impl<K, V, I> IterMapExt<K, V> for I
+where
+    K: std::hash::Hash + std::cmp::Eq,
+    I: Iterator<Item = (K, V)>,
+{
+    fn to_map(self) -> HashMap<K, V> {
+        self.collect()
+    }
+}
 
 pub fn diff(a: usize, b: usize) -> usize {
     (a as isize - b as isize).abs() as usize
@@ -90,6 +112,17 @@ pub fn moore_i(p1: (isize, isize), p2: (isize, isize)) -> usize {
 
 pub fn get_grid<T: Clone>(value: T, width: usize, height: usize) -> Vec<Vec<T>> {
     vec![vec![value; width]; height]
+}
+
+pub fn rotate_grid_clock<T: Clone>(grid: Vec<Vec<T>>) -> Vec<Vec<T>> {
+    if grid.is_empty() {
+        return vec![];
+    }
+    assert_eq!(grid.len(), grid[0].len());
+    let w = grid.len();
+    (0..w)
+        .map(|y| (0..w).map(|x| grid[w - x - 1][y].clone()).to_vec())
+        .to_vec()
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
@@ -376,61 +409,4 @@ where
     }
 
     goal_data
-}
-
-/// A Neighborhood for Agents moving along the 4 cardinal directions.
-///
-/// Also known as [Von Neumann Neighborhood](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood),
-/// Manhattan Metric or [Taxicab Geometry](https://en.wikipedia.org/wiki/Taxicab_geometry).
-///
-/// ```no_code
-/// A: Agent, o: reachable in one step
-///   o
-///   |
-/// o-A-o
-///   |
-///   o
-/// ```
-#[derive(Clone, Copy, Debug)]
-pub struct ManhattanNeighborhood {
-    width: usize,
-    height: usize,
-}
-
-impl ManhattanNeighborhood {
-    /// Creates a new ManhattanNeighborhood.
-    ///
-    /// `width` and `height` are the size of the Grid to move on.
-    pub fn new(width: usize, height: usize) -> ManhattanNeighborhood {
-        ManhattanNeighborhood { width, height }
-    }
-    pub fn get_all_neighbors(
-        &self,
-        point: (usize, usize),
-    ) -> Box<dyn Iterator<Item = (usize, usize)>> {
-        let (width, height) = (self.width, self.height);
-
-        let iter = [(0isize, -1isize), (1, 0), (0, 1), (-1, 0)]
-            .iter()
-            .map(move |(dx, dy)| (point.0 as isize + dx, point.1 as isize + dy))
-            .filter(move |(x, y)| {
-                *x >= 0 && *y >= 0 && (*x as usize) < width && (*y as usize) < height
-            })
-            .map(|(x, y)| (x as usize, y as usize));
-
-        Box::new(iter)
-    }
-    pub fn heuristic(&self, point: (usize, usize), goal: (usize, usize)) -> usize {
-        let diff_0 = if goal.0 > point.0 {
-            goal.0 - point.0
-        } else {
-            point.0 - goal.0
-        };
-        let diff_1 = if goal.1 > point.1 {
-            goal.1 - point.1
-        } else {
-            point.1 - goal.1
-        };
-        diff_0 + diff_1
-    }
 }
