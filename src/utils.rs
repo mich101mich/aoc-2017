@@ -120,6 +120,17 @@ impl Dir {
     pub fn as_delta(self) -> (isize, isize) {
         [(0, -1), (1, 0), (0, 1), (-1, 0)][self.num()]
     }
+    pub fn add_delta(self, pos: (isize, isize)) -> (isize, isize) {
+        let delta = self.as_delta();
+        (pos.0 + delta.0, pos.1 + delta.1)
+    }
+    pub fn add_delta_u(self, pos: (usize, usize)) -> (usize, usize) {
+        let delta = self.as_delta();
+        (
+            (pos.0 as isize + delta.0) as usize,
+            (pos.1 as isize + delta.1) as usize,
+        )
+    }
 }
 
 macro_rules! impl_from_into {
