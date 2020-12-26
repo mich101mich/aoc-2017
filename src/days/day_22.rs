@@ -35,7 +35,7 @@ pub fn run() {
             c => panic!("Invalid State {}", c),
         };
         *current = (*current + 1) % 4;
-        pos = dir.add_delta(pos);
+        pos += dir;
     }
     pv!(infected);
 }
@@ -72,7 +72,7 @@ pub fn part_one() {
             parsed.insert(pos);
             infected += 1;
         }
-        pos = dir.add_delta(pos);
+        pos += dir;
     }
     pv!(infected);
 }

@@ -12,7 +12,7 @@ pub fn run() {
         .iter()
         .zip(chars.iter().skip(chars.len() / 2).chain(chars.iter()))
         .filter(|(a, b)| a == b)
-        .map(|c| *c.0 as usize - '0' as usize)
+        .map(|c| parse_c(*c.0))
         .sum::<usize>();
 
     pv!(sum);
@@ -30,7 +30,7 @@ pub fn part_one() {
         .iter()
         .zip(chars.iter().skip(1).chain(chars.iter()))
         .filter(|(a, b)| a == b)
-        .map(|c| *c.0 as usize - '0' as usize)
+        .map(|c| parse_c(*c.0))
         .sum::<usize>();
 
     pv!(sum);

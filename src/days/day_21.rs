@@ -17,7 +17,7 @@ fn key_generator(input: &[&[char]]) -> impl Iterator<Item = String> {
             }
         }
         ret.push(s);
-        block = rotate_grid_clock(block);
+        rotate_grid_clock(&mut block);
     }
     ret.into_iter()
 }

@@ -24,4 +24,4 @@ fn main() {
 }" > src/main.rs
 
 cargo clippy
-cargo run
+cargo run --release

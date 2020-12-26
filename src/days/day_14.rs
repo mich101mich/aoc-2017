@@ -16,7 +16,7 @@ pub fn run() {
         })
         .to_vec();
 
-    let mut regions = get_grid(0, 128, 128);
+    let mut regions = vec![vec![0; 128]; 128];
     let mut current_region = 0;
     let iter = grid
         .iter()
