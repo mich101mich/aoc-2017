@@ -20,15 +20,15 @@ pub fn run() {
     let mut count = 0;
     loop {
         count += 1;
-        pos = dir.add_delta_u(pos);
+        pos += dir;
         match parsed[pos.1][pos.0] {
             '|' | '-' => {}
             '+' => {
                 let mut next_dir = dir.counter_clockwise();
-                let mut next_pos = next_dir.add_delta_u(pos);
+                let mut next_pos = pos + next_dir;
                 while parsed[next_pos.1][next_pos.0] == ' ' {
                     next_dir = next_dir.clockwise();
-                    next_pos = next_dir.add_delta_u(pos);
+                    next_pos = pos + next_dir;
                 }
                 dir = next_dir;
             }
@@ -61,15 +61,15 @@ pub fn part_one() {
     let mut dir = Dir::Down;
 
     loop {
-        pos = dir.add_delta_u(pos);
+        pos += dir;
         match parsed[pos.1][pos.0] {
             '|' | '-' => {}
             '+' => {
                 let mut next_dir = dir.counter_clockwise();
-                let mut next_pos = next_dir.add_delta_u(pos);
+                let mut next_pos = pos + next_dir;
                 while parsed[next_pos.1][next_pos.0] == ' ' {
                     next_dir = next_dir.clockwise();
-                    next_pos = next_dir.add_delta_u(pos);
+                    next_pos = pos + next_dir;
                 }
                 dir = next_dir;
             }

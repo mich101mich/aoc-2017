@@ -1,4 +1,5 @@
 use crate::utils::*;
+use std::sync::mpsc::*;
 
 #[derive(Clone, Copy, Debug)]
 enum Value {
@@ -62,8 +63,8 @@ pub fn run() {
     #[allow(unused_variables)]
     let input = include_str!("../input/18.txt");
 
-    let (send_1, recv_2) = std::sync::mpsc::channel::<isize>();
-    let (send_2, recv_1) = std::sync::mpsc::channel::<isize>();
+    let (send_1, recv_2) = channel::<isize>();
+    let (send_2, recv_1) = channel::<isize>();
     let mut channels = [Some((send_1, recv_1)), Some((send_2, recv_2))];
 
     let parsed = input.lines().map(Instruction::from).to_vec();
@@ -78,6 +79,7 @@ pub fn run() {
             let mut sounds: Vec<isize> = vec![];
             let mut instr = 0isize;
             let mut sent = 0;
+            let timeout = std::time::Duration::from_millis(100);
             loop {
                 if instr < 0 || instr >= parsed.len() as isize {
                     break;
@@ -87,7 +89,6 @@ pub fn run() {
                         send.send(a.get(&registers));
                         if id == 1 {
                             sent += 1;
-                            pv!(sent);
                         }
                     }
                     Recover(a) => {
@@ -95,7 +96,12 @@ pub fn run() {
                             Var(v) => v,
                             _ => panic!("Recover integer"),
                         };
-                        *registers.entry(*a).or_insert(0) = recv.recv().unwrap();
+                        let val = match recv.recv_timeout(timeout) {
+                            Ok(v) => v,
+                            Err(RecvTimeoutError::Timeout) => break,
+                            x => panic!("Receive failed: {:?}", x),
+                        };
+                        *registers.entry(*a).or_insert(0) = val;
                     }
                     Set(a, b) => {
                         let v = b.get(&registers);

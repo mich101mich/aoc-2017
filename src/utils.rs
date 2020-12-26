@@ -2,11 +2,16 @@
 
 pub use rand::prelude::*;
 pub use rayon::prelude::*;
+pub use regex::Regex;
 pub use std::collections::{HashMap, HashSet, VecDeque};
 pub use std::io::Write;
 pub use std::str::FromStr;
 
 pub use crate::neighbors::*;
+
+use std::cmp::Eq;
+use std::hash::Hash;
+use std::ops::*;
 
 macro_rules! pv {
     ($var: expr) => {
@@ -22,13 +27,13 @@ macro_rules! pv {
 }
 
 macro_rules! print_arr {
-	($var: ident) => {
-		print!("{}: ", stringify!($var));
-		for v in $var.iter() {
-			print!("{}", v);
-		}
-		println!();
-	};
+    ($var: ident) => {
+        print!("{}: ", stringify!($var));
+        for v in $var.iter() {
+            print!("{}", v);
+        }
+        println!();
+    };
 }
 
 macro_rules! scanf {
@@ -41,12 +46,17 @@ macro_rules! scanf {
 }
 
 pub fn parse_u(input: &str) -> usize {
-    input
-        .parse::<usize>()
-        .unwrap_or_else(|_| panic!("failed to parse >{}<", input))
+    usize::from_str(input).unwrap_or_else(|_| panic!("cannot parse >{}<", input))
 }
 pub fn parse(input: &str) -> isize {
-    isize::from_str(input).unwrap_or_else(|_| panic!("failed to parse >{}<", input))
+    isize::from_str(input).unwrap_or_else(|_| panic!("cannot parse >{}<", input))
+}
+pub fn parse_c(input: char) -> usize {
+    if input >= '0' && input <= '9' {
+        (input as u8 - b'0') as usize
+    } else {
+        panic!("{} is not a number", input)
+    }
 }
 
 pub trait IterExt<T> {
@@ -57,72 +67,99 @@ impl<T, I: Iterator<Item = T>> IterExt<T> for I {
         self.collect()
     }
 }
-pub trait IterHashExt<T: std::hash::Hash + std::cmp::Eq> {
+pub trait IterHashExt<T: Hash + Eq> {
     fn to_set(self) -> HashSet<T>;
 }
-impl<T, I> IterHashExt<T> for I
-where
-    T: std::hash::Hash + std::cmp::Eq,
-    I: Iterator<Item = T>,
-{
+impl<T: Hash + Eq, I: Iterator<Item = T>> IterHashExt<T> for I {
     fn to_set(self) -> HashSet<T> {
         self.collect()
     }
 }
-pub trait IterMapExt<K: std::hash::Hash + std::cmp::Eq, V> {
+pub trait IterMapExt<K: Hash + Eq, V> {
     fn to_map(self) -> HashMap<K, V>;
 }
-impl<K, V, I> IterMapExt<K, V> for I
-where
-    K: std::hash::Hash + std::cmp::Eq,
-    I: Iterator<Item = (K, V)>,
-{
+impl<K: Hash + Eq, V, I: Iterator<Item = (K, V)>> IterMapExt<K, V> for I {
     fn to_map(self) -> HashMap<K, V> {
         self.collect()
     }
 }
 
-pub fn diff(a: usize, b: usize) -> usize {
-    (a as isize - b as isize).abs() as usize
+pub trait DiffExt {
+    fn diff(self, other: usize) -> usize;
 }
-pub fn diff_i(a: isize, b: isize) -> usize {
-    (a - b).abs() as usize
+impl DiffExt for usize {
+    fn diff(self, other: usize) -> usize {
+        if self > other {
+            self - other
+        } else {
+            other - self
+        }
+    }
+}
+
+pub fn diff(a: usize, b: usize) -> usize {
+    a.diff(b)
+}
+pub fn diff_i(a: isize, b: isize) -> isize {
+    (a - b).abs()
 }
 
 pub fn manhattan(p1: (usize, usize), p2: (usize, usize)) -> usize {
-    diff(p1.0, p2.0) + diff(p1.1, p2.1)
+    p1.0.diff(p2.0) + p1.1.diff(p2.1)
 }
-pub fn manhattan_i(p1: (isize, isize), p2: (isize, isize)) -> usize {
+pub fn manhattan_i(p1: (isize, isize), p2: (isize, isize)) -> isize {
     diff_i(p1.0, p2.0) + diff_i(p1.1, p2.1)
 }
 
 pub fn manhattan_3d(p1: (usize, usize, usize), p2: (usize, usize, usize)) -> usize {
-    diff(p1.0, p2.0) + diff(p1.1, p2.1) + diff(p1.2, p2.2)
+    p1.0.diff(p2.0) + p1.1.diff(p2.1) + p1.2.diff(p2.2)
 }
-pub fn manhattan_3d_i(p1: (isize, isize, isize), p2: (isize, isize, isize)) -> usize {
+pub fn manhattan_3d_i(p1: (isize, isize, isize), p2: (isize, isize, isize)) -> isize {
     diff_i(p1.0, p2.0) + diff_i(p1.1, p2.1) + diff_i(p1.2, p2.2)
 }
 
 pub fn moore(p1: (usize, usize), p2: (usize, usize)) -> usize {
-    diff(p1.0, p2.0).max(diff(p1.1, p2.1))
+    p1.0.diff(p2.0).max(p1.1.diff(p2.1))
 }
-pub fn moore_i(p1: (isize, isize), p2: (isize, isize)) -> usize {
+pub fn moore_i(p1: (isize, isize), p2: (isize, isize)) -> isize {
     diff_i(p1.0, p2.0).max(diff_i(p1.1, p2.1))
 }
 
-pub fn get_grid<T: Clone>(value: T, width: usize, height: usize) -> Vec<Vec<T>> {
-    vec![vec![value; width]; height]
-}
-
-pub fn rotate_grid_clock<T: Clone>(grid: Vec<Vec<T>>) -> Vec<Vec<T>> {
+/// Rotates a Square in-place
+///
+/// draws an upside down triangle on the grid:
+///     0(1 2 3)
+///     4 5(6)7
+///     8 9 A B
+///     C D E F
+/// And swap-rotates each element in the triangle with the corresponding positions
+/// in the rotated versions of the triangle
+/// example:
+///  1 - 7 - E - 8 - 1
+/// swaps:
+/// (7 - 1)- E - 8
+///  7 -(E - 1)- 8
+///  7 - E -(8 - 1)
+/// result:
+///  7 - E - 8 - 1
+pub fn rotate_grid_clock<T>(grid: &mut [Vec<T>]) {
     if grid.is_empty() {
-        return vec![];
+        return;
     }
     assert_eq!(grid.len(), grid[0].len());
     let w = grid.len();
-    (0..w)
-        .map(|y| (0..w).map(|x| grid[w - x - 1][y].clone()).to_vec())
-        .to_vec()
+    use std::mem::{swap, transmute};
+    for i in 0..w / 2 {
+        for j in i + 1..w - i {
+            let mut a = (i, j);
+            for _ in 0..3 {
+                let b = (w - a.1 - 1, a.0);
+                // SAFETY: trust me, i tested this once in the Rust Playground
+                unsafe { swap(transmute(&mut grid[a.0][a.1]), &mut grid[b.0][b.1]) };
+                a = b;
+            }
+        }
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
@@ -147,27 +184,25 @@ impl Dir {
     pub fn num(self) -> usize {
         self.into()
     }
-    pub fn all() -> impl DoubleEndedIterator<Item = Dir> {
+    pub fn all() -> std::iter::Copied<std::slice::Iter<'static, Dir>> {
         [Up, Right, Down, Left].iter().copied()
     }
     pub fn as_delta(self) -> (isize, isize) {
         [(0, -1), (1, 0), (0, 1), (-1, 0)][self.num()]
     }
-    pub fn add_delta(self, pos: (isize, isize)) -> (isize, isize) {
+    pub fn checked_add(self, pos: (usize, usize)) -> Option<(usize, usize)> {
         let delta = self.as_delta();
-        (pos.0 + delta.0, pos.1 + delta.1)
-    }
-    pub fn add_delta_u(self, pos: (usize, usize)) -> (usize, usize) {
-        let delta = self.as_delta();
-        (
-            (pos.0 as isize + delta.0) as usize,
-            (pos.1 as isize + delta.1) as usize,
-        )
+        let ret = ((pos.0 as isize + delta.0), (pos.1 as isize + delta.1));
+        if ret.0 < 0 || ret.1 < 0 {
+            None
+        } else {
+            Some((ret.0 as usize, ret.1 as usize))
+        }
     }
 }
 
-macro_rules! impl_from_into {
-    ($type:ty) => {
+macro_rules! impl_dir_ops {
+    ($($type:ty),+) => {$(
         impl From<$type> for Dir {
             fn from(val: $type) -> Dir {
                 match val {
@@ -184,19 +219,25 @@ macro_rules! impl_from_into {
                 self as $type
             }
         }
-    };
+        impl Add<Dir> for ($type, $type) {
+            type Output = Self;
+            fn add(self, other: Dir) -> Self {
+                let delta = other.as_delta();
+                (
+                    (self.0 as isize + delta.0) as $type,
+                    (self.1 as isize + delta.1) as $type,
+                )
+            }
+        }
+        impl AddAssign<Dir> for ($type, $type) {
+            fn add_assign(&mut self, other: Dir) {
+                *self = *self + other;
+            }
+        }
+    )+}
 }
 
-impl_from_into!(u8);
-impl_from_into!(u16);
-impl_from_into!(u32);
-impl_from_into!(u64);
-impl_from_into!(usize);
-impl_from_into!(i8);
-impl_from_into!(i16);
-impl_from_into!(i32);
-impl_from_into!(i64);
-impl_from_into!(isize);
+impl_dir_ops!(u8, u16, u32, u64, usize, i8, i16, i32, i64, isize);
 
 pub type Cost = usize;
 
@@ -255,7 +296,7 @@ pub fn a_star_search<Id, GetNeighbors, NeighborIter, GetCost, IsWalkable, Heuris
     heuristic: Heuristic,
 ) -> Option<Path<Id>>
 where
-    Id: Copy + ::std::cmp::Eq + ::std::hash::Hash + std::fmt::Debug,
+    Id: Copy + std::cmp::Eq + std::hash::Hash + std::fmt::Debug,
     GetNeighbors: Fn(Id) -> NeighborIter,
     NeighborIter: Iterator<Item = Id>,
     GetCost: Fn(Id, Id) -> Cost,
