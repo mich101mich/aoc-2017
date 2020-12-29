@@ -13,7 +13,6 @@ extern crate scan_fmt;
 
 #[macro_use]
 mod utils;
-mod neighbors;
 mod days {
     pub mod day_$DAY;
 }
@@ -23,5 +22,4 @@ fn main() {
     day_$DAY::$FUNCTION();
 }" > src/main.rs
 
-cargo clippy
-cargo run --release
+cargo clippy && cargo run --release

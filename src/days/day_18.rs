@@ -98,8 +98,7 @@ pub fn run() {
                         };
                         let val = match recv.recv_timeout(timeout) {
                             Ok(v) => v,
-                            Err(RecvTimeoutError::Timeout) => break,
-                            x => panic!("Receive failed: {:?}", x),
+                            _ => break,
                         };
                         *registers.entry(*a).or_insert(0) = val;
                     }
