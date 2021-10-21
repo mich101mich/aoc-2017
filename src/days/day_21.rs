@@ -2,7 +2,7 @@ use crate::utils::*;
 
 fn key_generator(input: &[&[char]]) -> impl Iterator<Item = String> {
     let mut ret = vec![];
-    let mut block = input.iter().map(|s| s.to_vec()).to_vec();
+    let mut block = Grid::from(input);
     for rot in 0..8 {
         if rot == 4 {
             block.reverse();
@@ -17,7 +17,7 @@ fn key_generator(input: &[&[char]]) -> impl Iterator<Item = String> {
             }
         }
         ret.push(s);
-        rotate_grid_clock(&mut block);
+        block.rotate_clockwise();
     }
     ret.into_iter()
 }

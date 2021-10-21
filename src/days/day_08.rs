@@ -8,7 +8,7 @@ pub fn run() {
 
     let parsed = input
         .lines()
-        .map(|l| {
+        .filter_map(|l| {
             scanf!(
                 l,
                 "{} {} {} if {} {} {}",
@@ -58,7 +58,7 @@ pub fn part_one() {
 
     let parsed = input
         .lines()
-        .map(|l| {
+        .filter_map(|l| {
             scanf!(
                 l,
                 "{} {} {} if {} {} {}",

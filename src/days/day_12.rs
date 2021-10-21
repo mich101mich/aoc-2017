@@ -22,9 +22,7 @@ pub fn run() {
     while !all_nodes.is_empty() {
         let start = *all_nodes.iter().next().unwrap();
         let reachable = dijkstra_search(
-            |n| parsed[&n].iter().copied(),
-            |_, _| 1,
-            |_| true,
+            |n, out| parsed[&n].iter().for_each(|x| out.push(*x)),
             start,
             &all_nodes.iter().copied().to_vec(),
         );
@@ -54,9 +52,7 @@ pub fn part_one() {
 
     let all_nodes = parsed.keys().copied().to_vec();
     let reachable = dijkstra_search(
-        |n| parsed[&n].iter().copied(),
-        |_, _| 1,
-        |_| true,
+        |n, out| parsed[&n].iter().for_each(|x| out.push(*x)),
         0usize,
         &all_nodes,
     );

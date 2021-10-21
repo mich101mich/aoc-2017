@@ -80,14 +80,20 @@ enum Value {
     Var(char),
 }
 use Value::*;
-impl From<String> for Value {
-    fn from(s: String) -> Self {
-        if let Ok(num) = s.parse() {
-            Num(num)
-        } else {
-            Var(s.chars().next().unwrap())
+impl std::str::FromStr for Value {
+    type Err = <isize as std::str::FromStr>::Err;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.len() == 1 {
+            let c = s.chars().next().unwrap();
+            if c.is_alphabetic() {
+                return Ok(Var(c));
+            }
         }
+        s.parse().map(Num)
     }
+}
+impl RegexRepresentation for Value {
+    const REGEX: &'static str = r"[a-zA-Z]|\-?\d+";
 }
 impl Value {
     fn get(&self, reg: &HashMap<char, isize>) -> isize {
@@ -111,20 +117,20 @@ enum Instruction {
 use Instruction::*;
 impl From<&str> for Instruction {
     fn from(l: &str) -> Self {
-        if let Ok((a, b)) = scan_fmt!(l, "set {} {}", char, String) {
-            Set(a, b.into())
-        } else if let Ok((a, b)) = scan_fmt!(l, "add {} {}", char, String) {
-            Add(a, b.into())
-        } else if let Ok((a, b)) = scan_fmt!(l, "sub {} {}", char, String) {
-            Sub(a, b.into())
-        } else if let Ok((a, b)) = scan_fmt!(l, "mul {} {}", char, String) {
-            Mul(a, b.into())
-        } else if let Ok((a, b)) = scan_fmt!(l, "mod {} {}", char, String) {
-            Mod(a, b.into())
-        } else if let Ok((a, b)) = scan_fmt!(l, "jgz {} {}", String, String) {
-            JumpGZ(a.into(), b.into())
-        } else if let Ok((a, b)) = scan_fmt!(l, "jnz {} {}", String, String) {
-            JumpNZ(a.into(), b.into())
+        if let Some((a, b)) = scanf!(l, "set {} {}", char, Value) {
+            Set(a, b)
+        } else if let Some((a, b)) = scanf!(l, "add {} {}", char, Value) {
+            Add(a, b)
+        } else if let Some((a, b)) = scanf!(l, "sub {} {}", char, Value) {
+            Sub(a, b)
+        } else if let Some((a, b)) = scanf!(l, "mul {} {}", char, Value) {
+            Mul(a, b)
+        } else if let Some((a, b)) = scanf!(l, "mod {} {}", char, Value) {
+            Mod(a, b)
+        } else if let Some((a, b)) = scanf!(l, "jgz {} {}", Value, Value) {
+            JumpGZ(a, b)
+        } else if let Some((a, b)) = scanf!(l, "jnz {} {}", Value, Value) {
+            JumpNZ(a, b)
         } else {
             panic!("Invalid Instruction {}", l)
         }

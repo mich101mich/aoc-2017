@@ -8,25 +8,26 @@ pub fn part_one() {
     let mut lines = input.lines().to_vec();
     let mut i = 3;
 
-    let mut state = scanf!(lines[0], "Begin in state {}.", char);
+    let mut state = scanf!(lines[0], "Begin in state {}.", char).unwrap();
     let goal = scanf!(
         lines[1],
         "Perform a diagnostic checksum after {} steps.",
         usize
-    );
+    )
+    .unwrap();
 
     let mut states = HashMap::new();
 
     while i < lines.len() {
-        let name = scanf!(lines[i], "In state {}:", char);
+        let name = scanf!(lines[i], "In state {}:", char).unwrap();
         // If the current value is 0:
-        let v0 = scanf!(lines[i + 2], "    - Write the value {}.", usize);
+        let v0 = scanf!(lines[i + 2], "    - Write the value {}.", usize).unwrap();
         let r0 = lines[i + 3] == "    - Move one slot to the right.";
-        let s0 = scanf!(lines[i + 4], "    - Continue with state {}.", char);
+        let s0 = scanf!(lines[i + 4], "    - Continue with state {}.", char).unwrap();
         // If the current value is 1:
-        let v1 = scanf!(lines[i + 6], "    - Write the value {}.", usize);
+        let v1 = scanf!(lines[i + 6], "    - Write the value {}.", usize).unwrap();
         let r1 = lines[i + 7] == "    - Move one slot to the right.";
-        let s1 = scanf!(lines[i + 8], "    - Continue with state {}.", char);
+        let s1 = scanf!(lines[i + 8], "    - Continue with state {}.", char).unwrap();
         states.insert(name, [(v0, r0, s0), (v1, r1, s1)]);
         i += 10;
     }

@@ -1,15 +1,12 @@
-#![allow(unused_imports)]
-
-#[macro_use]
-extern crate scan_fmt;
+#![allow(unused_imports, clippy::while_let_on_iterator)]
 
 #[macro_use]
 mod utils;
 mod days {
-    pub mod day_25;
+    pub mod day_23;
 }
-use days::day_25;
+use days::day_23;
 
 fn main() {
-    day_25::part_one();
+    day_23::run();
 }
